@@ -1,0 +1,12 @@
+enable-end-portal: true
+exit-portal-activated: true
+generator:
+  end:
+    coordinate-scale: 684.412
+    height:
+      scale: 1368.824
+    detail:
+      noise-scale:
+        x: 80.0
+        y: 160.0
+        z: 80.0
