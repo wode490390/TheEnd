@@ -17,9 +17,9 @@ import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.generator.Generator;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.RespawnPacket;
+import cn.nukkit.network.protocol.ShowCreditsPacket;
 import cn.nukkit.scheduler.Task;
 import cn.wode490390.nukkit.theend.generator.TheEndGenerator;
-import cn.wode490390.nukkit.theend.packet.ShowCreditsPacket;
 import com.google.common.collect.Sets;
 import java.util.Set;
 

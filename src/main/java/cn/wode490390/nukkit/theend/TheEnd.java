@@ -1,13 +1,11 @@
 package cn.wode490390.nukkit.theend;
 
 import cn.nukkit.level.generator.Generator;
-import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
 import cn.wode490390.nukkit.theend.generator.TheEndGenerator;
 import cn.wode490390.nukkit.theend.listener.PortalListener;
 import cn.wode490390.nukkit.theend.listener.TheEndListener;
-import cn.wode490390.nukkit.theend.packet.ShowCreditsPacket;
 
 public class TheEnd extends PluginBase {
 
@@ -43,7 +41,6 @@ public class TheEnd extends PluginBase {
         }
 
         Generator.addGenerator(TheEndGenerator.class, "the_end", TheEndGenerator.TYPE_THE_END);
-        this.getServer().getNetwork().registerPacket(ProtocolInfo.SHOW_CREDITS_PACKET, ShowCreditsPacket.class);
         this.getServer().getPluginManager().registerEvents(new TheEndListener(), this);
         if (portal) {
             this.getServer().getPluginManager().registerEvents(new PortalListener(), this);

@@ -33,3 +33,5 @@ generator:
 - [X] End Podium
 - [X] Chorus Tree
 - [X] End Poem
+
+###### If I have any grammar and terms error, please correct my wrong :)

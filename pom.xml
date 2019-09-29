@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cn.wode490390.nukkit</groupId>
     <artifactId>theend</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>TheEnd</name>
     <description>The end plugin for Nukkit</description>
     <inceptionYear>2018</inceptionYear>
@@ -13,6 +13,7 @@
         <license>
             <name>GNU General Public License, Version 3.0</name>
             <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
     <properties>
