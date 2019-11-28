@@ -15,15 +15,17 @@ import cn.nukkit.math.NukkitRandom;
  */
 public class SimplexNoise extends PerlinNoise {
 
-    protected static final double SQRT_3 = 1.7320508075688772; // Math.sqrt(3)
-    protected static final double F2 = 0.5 * (SQRT_3 - 1);
-    protected static final double G2 = (3 - SQRT_3) / 6;
+    protected static final double F2 = 0.5 * (Math.sqrt(3) - 1);
+    protected static final double G2 = (3 - Math.sqrt(3)) / 6;
     protected static final double G22 = G2 * 2.0 - 1;
     protected static final double F3 = 1.0 / 3.0;
     protected static final double G3 = 1.0 / 6.0;
     protected static final double G32 = G3 * 2.0;
     protected static final double G33 = G3 * 3.0 - 1.0;
-    private static final Grad[] grad3 = {new Grad(1, 1, 0), new Grad(-1, 1, 0), new Grad(1, -1, 0), new Grad(-1, -1, 0), new Grad(1, 0, 1), new Grad(-1, 0, 1), new Grad(1, 0, -1), new Grad(-1, 0, -1), new Grad(0, 1, 1), new Grad(0, -1, 1), new Grad(0, 1, -1), new Grad(0, -1, -1)};
+    private static final Grad[] grad3 = {
+        new Grad(1, 1, 0), new Grad(-1, 1, 0), new Grad(1, -1, 0), new Grad(-1, -1, 0),
+        new Grad(1, 0, 1), new Grad(-1, 0, 1), new Grad(1, 0, -1), new Grad(-1, 0, -1),
+        new Grad(0, 1, 1), new Grad(0, -1, 1), new Grad(0, 1, -1), new Grad(0, -1, -1)};
     protected final int[] permMod12 = new int[512];
 
     /**

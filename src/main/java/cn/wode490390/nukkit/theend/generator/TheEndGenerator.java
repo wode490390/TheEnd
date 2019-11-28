@@ -1,17 +1,15 @@
 package cn.wode490390.nukkit.theend.generator;
 
-import cn.nukkit.block.Block;
 import cn.nukkit.level.ChunkManager;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Position;
-import cn.nukkit.level.biome.EnumBiome;
+import cn.nukkit.level.biome.Biome;
 import cn.nukkit.level.format.generic.BaseFullChunk;
 import cn.nukkit.level.generator.Generator;
 import cn.nukkit.level.generator.populator.type.Populator;
 import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.math.Vector3;
-import cn.wode490390.nukkit.theend.TheEnd;
-import cn.wode490390.nukkit.theend.noise.OctaveGenerator;
+import cn.nukkit.utils.Config;
 import cn.wode490390.nukkit.theend.noise.PerlinOctaveGenerator;
 import cn.wode490390.nukkit.theend.noise.SimplexNoise;
 import cn.wode490390.nukkit.theend.object.theend.ObsidianPillar;
@@ -30,13 +28,22 @@ public class TheEndGenerator extends Generator {
 
     public static final int TYPE_THE_END = 4;
 
-    protected static double coordinateScale = getConfig("end.coordinate-scale", 684.412d);
-    protected static double heightScale = getConfig("end.height.scale", 1368.824d);
-    protected static double detailNoiseScaleX = getConfig("end.detail.noise-scale.x", 80d);  // mainNoiseScaleX
-    protected static double detailNoiseScaleY = getConfig("end.detail.noise-scale.y", 160d); // mainNoiseScaleY
-    protected static double detailNoiseScaleZ = getConfig("end.detail.noise-scale.z", 80d);  // mainNoiseScaleZ
+    protected static double coordinateScale;
+    protected static double heightScale;
+    protected static double detailNoiseScaleX; // mainNoiseScaleX
+    protected static double detailNoiseScaleY; // mainNoiseScaleY
+    protected static double detailNoiseScaleZ; // mainNoiseScaleZ
+    protected static boolean activated;
 
-    protected final Map<String, Map<String, OctaveGenerator>> octaveCache = Maps.newHashMap();
+    public static void setConfig(Config config) {
+        coordinateScale = getConfig(config, "generator.end.coordinate-scale", 684.412d);
+        heightScale = getConfig(config, "generator.end.height.scale", 1368.824d);
+        detailNoiseScaleX = getConfig(config, "generator.end.detail.noise-scale.x", 80d);
+        detailNoiseScaleY = getConfig(config, "generator.end.detail.noise-scale.y", 160d);
+        detailNoiseScaleZ = getConfig(config, "generator.end.detail.noise-scale.z", 80d);
+        activated = getConfig(config, "exit-portal-activated", true);
+    }
+
     protected final double[][][] density = new double[3][3][33];
 
     protected ChunkManager level;
@@ -47,6 +54,9 @@ public class TheEndGenerator extends Generator {
     protected long localSeed1;
     protected long localSeed2;
 
+    protected PerlinOctaveGenerator roughnessNoise;
+    protected PerlinOctaveGenerator roughness2Noise;
+    protected PerlinOctaveGenerator detailNoise;
     protected SimplexNoise islandNoise;
 
     public TheEndGenerator() {
@@ -90,6 +100,21 @@ public class TheEndGenerator extends Generator {
         this.localSeed1 = ThreadLocalRandom.current().nextLong();
         this.localSeed2 = ThreadLocalRandom.current().nextLong();
 
+        this.roughnessNoise = new PerlinOctaveGenerator(this.nukkitRandom, 16, 3, 33, 3);
+        this.roughnessNoise.setXScale(coordinateScale);
+        this.roughnessNoise.setYScale(heightScale);
+        this.roughnessNoise.setZScale(coordinateScale);
+
+        this.roughness2Noise = new PerlinOctaveGenerator(this.nukkitRandom, 16, 3, 33, 3);
+        this.roughness2Noise.setXScale(coordinateScale);
+        this.roughness2Noise.setYScale(heightScale);
+        this.roughness2Noise.setZScale(coordinateScale);
+
+        this.detailNoise = new PerlinOctaveGenerator(this.nukkitRandom, 8, 3, 33, 3);
+        this.detailNoise.setXScale(coordinateScale / detailNoiseScaleX);
+        this.detailNoise.setYScale(heightScale / detailNoiseScaleY);
+        this.detailNoise.setZScale(coordinateScale / detailNoiseScaleZ);
+
         this.islandNoise = new SimplexNoise(this.nukkitRandom);
 
         for (ObsidianPillar obsidianPillar : ObsidianPillar.getObsidianPillars(this.level.getSeed())) {
@@ -97,7 +122,8 @@ public class TheEndGenerator extends Generator {
             populator.setAmount(1);
             this.populators.add(populator);
         }
-        this.populators.add(new PopulatorPodium(TheEnd.activated));
+
+        this.populators.add(new PopulatorPodium(activated));
         this.populators.add(new PopulatorEndIsland(this));
         this.populators.add(new PopulatorChorusPlant(this));
         this.populators.add(new PopulatorEndGateway(this));
@@ -107,15 +133,14 @@ public class TheEndGenerator extends Generator {
     public void generateChunk(int chunkX, int chunkZ) {
         this.nukkitRandom.setSeed(chunkX * localSeed1 ^ chunkZ * localSeed2 ^ this.level.getSeed());
 
-        BaseFullChunk chunk = level.getChunk(chunkX, chunkZ);
+        BaseFullChunk chunk = this.level.getChunk(chunkX, chunkZ);
 
         int densityX = chunkX << 1;
         int densityZ = chunkZ << 1;
 
-        Map<String, OctaveGenerator> octaves = this.getWorldOctaves();
-        double[] roughnessNoise = ((PerlinOctaveGenerator) octaves.get("roughness")).getFractalBrownianMotion(densityX, 0, densityZ, 0.5d, 2d);
-        double[] roughnessNoise2 = ((PerlinOctaveGenerator) octaves.get("roughness2")).getFractalBrownianMotion(densityX, 0, densityZ, 0.5d, 2d);
-        double[] detailNoise = ((PerlinOctaveGenerator) octaves.get("detail")).getFractalBrownianMotion(densityX, 0, densityZ, 0.5d, 2d);
+        double[] roughnessNoise = this.roughnessNoise.getFractalBrownianMotion(densityX, 0, densityZ, 0.5d, 2d);
+        double[] roughnessNoise2 = this.roughness2Noise.getFractalBrownianMotion(densityX, 0, densityZ, 0.5d, 2d);
+        double[] detailNoise = this.detailNoise.getFractalBrownianMotion(densityX, 0, densityZ, 0.5d, 2d);
 
         int index = 0;
 
@@ -190,19 +215,15 @@ public class TheEndGenerator extends Generator {
             }
         }
 
-        for (Populator populator : this.generationPopulators) {
-            populator.populate(this.level, chunkX, chunkZ, this.nukkitRandom, chunk);
-        }
+        this.generationPopulators.forEach(populator -> populator.populate(this.level, chunkX, chunkZ, this.nukkitRandom, chunk));
     }
 
     @Override
     public void populateChunk(int chunkX, int chunkZ) {
         BaseFullChunk chunk = level.getChunk(chunkX, chunkZ);
         this.nukkitRandom.setSeed(0xdeadbeef ^ (chunkX << 8) ^ chunkZ ^ this.level.getSeed());
-        for (Populator populator : this.populators) {
-            populator.populate(this.level, chunkX, chunkZ, this.nukkitRandom, chunk);
-        }
-        EnumBiome.getBiome(chunk.getBiomeId(7, 7)).populateChunk(this.level, chunkX, chunkZ, this.nukkitRandom);
+        this.populators.forEach(populator -> populator.populate(this.level, chunkX, chunkZ, this.nukkitRandom, chunk));
+        Biome.getBiome(chunk.getBiomeId(7, 7)).populateChunk(this.level, chunkX, chunkZ, this.nukkitRandom);
     }
 
     @Override
@@ -210,75 +231,40 @@ public class TheEndGenerator extends Generator {
         return new Vector3(100.5, 49, 0.5);
     }
 
-    /**
-     * Returns the {@link OctaveGenerator} instances for the world, which are
-     * either newly created or retrieved from the cache.
-     *
-     * @return A map of {@link OctaveGenerator}s
-     */
-    protected final Map<String, OctaveGenerator> getWorldOctaves() {
-        if (this.octaveCache.get(this.getName()) == null) {
-            Map<String, OctaveGenerator> octaves = Maps.newHashMap();
-            NukkitRandom seed = new NukkitRandom(this.level.getSeed());
-
-            OctaveGenerator gen = new PerlinOctaveGenerator(seed, 16, 3, 33, 3);
-            gen.setXScale(coordinateScale);
-            gen.setYScale(heightScale);
-            gen.setZScale(coordinateScale);
-            octaves.put("roughness", gen);
-
-            gen = new PerlinOctaveGenerator(seed, 16, 3, 33, 3);
-            gen.setXScale(coordinateScale);
-            gen.setYScale(heightScale);
-            gen.setZScale(coordinateScale);
-            octaves.put("roughness2", gen);
-
-            gen = new PerlinOctaveGenerator(seed, 8, 3, 33, 3);
-            gen.setXScale(coordinateScale / detailNoiseScaleX);
-            gen.setYScale(heightScale / detailNoiseScaleY);
-            gen.setZScale(coordinateScale / detailNoiseScaleZ);
-            octaves.put("detail", gen);
-
-            this.octaveCache.put(this.getName(), octaves);
-            return octaves;
-        }
-        return this.octaveCache.get(this.getName());
-    }
-
     public float getIslandHeight(int chunkX, int chunkZ) {
-        float f0 = (chunkX << 1) + 1;
-        float f1 = (chunkZ << 1) + 1;
-        float f = (float) (100 - Math.sqrt(Math.pow(f0, 2) + Math.pow(f1, 2)) * 8f);
-        if (f > 80) {
-            f = 80;
+        float xx = (chunkX << 1) + 1;
+        float zz = (chunkZ << 1) + 1;
+        float height = (float) (100 - Math.sqrt(Math.pow(xx, 2) + Math.pow(zz, 2)) * 8f);
+        if (height > 80) {
+            height = 80;
         }
-        if (f < -100) {
-            f = -100;
+        if (height < -100) {
+            height = -100;
         }
 
-        for (int i = -12; i <= 12; ++i) {
-            for (int j = -12; j <= 12; ++j) {
-                long x = chunkX + i;
-                long z = chunkZ + j;
+        for (int cx = -12; cx <= 12; ++cx) {
+            for (int cz = -12; cz <= 12; ++cz) {
+                long x = chunkX + cx;
+                long z = chunkZ + cz;
 
                 if (Math.pow(x, 2) + Math.pow(z, 2) > 4096 && this.islandNoise.noise(x, z) < -0.8999999761581421) { // 0.9f / 1.0d
-                    f0 = 1 - (i << 1);
-                    f1 = 1 - (j << 1);
-                    float t = (float) (100 - Math.sqrt(Math.pow(f0, 2) + Math.pow(f1, 2)) * ((Math.abs(x) * 3439 + Math.abs(z) * 147) % 13 + 9));
-                    if (t > 80) {
-                        t = 80;
+                    xx = 1 - (cx << 1);
+                    zz = 1 - (cz << 1);
+                    float height2 = (float) (100 - Math.sqrt(Math.pow(xx, 2) + Math.pow(zz, 2)) * ((Math.abs(x) * 3439 + Math.abs(z) * 147) % 13 + 9));
+                    if (height2 > 80) {
+                        height2 = 80;
                     }
-                    if (t < -100) {
-                        t = -100;
+                    if (height2 < -100) {
+                        height2 = -100;
                     }
-                    if (t > f) {
-                        f = t;
+                    if (height2 > height) {
+                        height = height2;
                     }
                 }
             }
         }
 
-        return f;
+        return height;
     }
 
     public static void spawnPlatform(Position pos) {
@@ -288,21 +274,17 @@ public class TheEndGenerator extends Generator {
         int z = pos.getFloorZ();
         for (int xx = x - 2; xx < x + 3; xx++) {
             for (int zz = z - 2; zz < z + 3; zz++)  {
-                level.setBlockAt(xx, y - 1, zz, Block.OBSIDIAN);
+                level.setBlockAt(xx, y - 1, zz, OBSIDIAN);
                 for (int yy = y; yy < y + 4; yy++) {
-                    level.setBlockAt(xx, yy, zz, Block.AIR);
+                    level.setBlockAt(xx, yy, zz, AIR);
                 }
             }
         }
     }
 
-    protected static <T> T getConfig(String variable) {
-        return getConfig(variable, null);
-    }
-
     @SuppressWarnings("unchecked")
-    protected static <T> T getConfig(String variable, T defaultValue) {
-        Object value = TheEnd.config.get("generator." + variable);
+    protected static <T> T getConfig(Config config, String variable, T defaultValue) {
+        Object value = config.get(variable);
         return value == null ? defaultValue : (T) value;
     }
 }

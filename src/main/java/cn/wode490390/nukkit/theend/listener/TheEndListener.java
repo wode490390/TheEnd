@@ -2,14 +2,9 @@ package cn.wode490390.nukkit.theend.listener;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.Block;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.item.EntityEndCrystal;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockPlaceEvent;
-import cn.nukkit.event.entity.EntityDamageByBlockEvent;
-import cn.nukkit.event.entity.EntityDamageEvent;
-import cn.nukkit.event.entity.EntityDamageEvent.DamageCause;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerInteractEvent.Action;
 import cn.nukkit.item.Item;
@@ -18,29 +13,7 @@ import cn.nukkit.network.protocol.LevelSoundEventPacket;
 
 public class TheEndListener implements Listener {
 
-    private static final int[] frame_faces = {2, 3, 0, 1};
-
-    public TheEndListener() {
-
-    }
-
-    @EventHandler
-    public void onEntityDamageByBlock(EntityDamageByBlockEvent event) {
-        Entity entity = event.getEntity();
-        DamageCause cause = event.getCause();
-        if (entity instanceof EntityEndCrystal && (cause == DamageCause.FIRE || cause == DamageCause.LAVA)) {
-            event.setCancelled();
-        }
-    }
-
-    @EventHandler
-    public void onEntityDamage(EntityDamageEvent event) {
-        Entity entity = event.getEntity();
-        DamageCause cause = event.getCause();
-        if (entity instanceof EntityEndCrystal && cause == DamageCause.FIRE_TICK) {
-            event.setCancelled();
-        }
-    }
+    private static final int[] frame_faces = {2, 3, 0, 1}; //TODO: https://github.com/NukkitX/Nukkit/pull/811
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {

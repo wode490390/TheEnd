@@ -9,36 +9,25 @@ import cn.wode490390.nukkit.theend.listener.TheEndListener;
 
 public class TheEnd extends PluginBase {
 
-    private static final String CONFIG_ACTIVATED = "exit-portal-activated";
-    private static final String CONFIG_PORTAL = "enable-end-portal";
-
-    public static Config config;
     public static boolean activated;
 
     @Override
     public void onEnable() {
         try {
             new MetricsLite(this);
-        } catch (Exception ignore) {
+        } catch (Throwable ignore) {
 
         }
         this.saveDefaultConfig();
-        config = this.getConfig();
-        String node = CONFIG_ACTIVATED;
+        Config config = this.getConfig();
+        String node = "enable-end-portal";
+        boolean portal = true;
         try {
-            activated = config.getBoolean(node, true);
+            portal = config.getBoolean(node, portal);
         } catch (Exception e) {
-            activated = true;
-            this.logLoadException(node);
+            this.logConfigException(node, e);
         }
-        node = CONFIG_PORTAL;
-        boolean portal;
-        try {
-            portal = config.getBoolean(node, true);
-        } catch (Exception e) {
-            portal = true;
-            this.logLoadException(node);
-        }
+        TheEndGenerator.setConfig(config);
 
         Generator.addGenerator(TheEndGenerator.class, "the_end", TheEndGenerator.TYPE_THE_END);
         this.getServer().getPluginManager().registerEvents(new TheEndListener(), this);
@@ -47,7 +36,7 @@ public class TheEnd extends PluginBase {
         }
     }
 
-    private void logLoadException(String node) {
-        this.getLogger().alert("An error occurred while reading the configuration '" + node + "'. Use the default value.");
+    private void logConfigException(String node, Throwable t) {
+        this.getLogger().alert("An error occurred while reading the configuration '" + node + "'. Use the default value.", t);
     }
 }

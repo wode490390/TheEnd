@@ -58,10 +58,6 @@ public class ObsidianPillar {
 
     private static class ObsidianPillarCacheLoader extends CacheLoader<Long, ObsidianPillar[]> {
 
-        private ObsidianPillarCacheLoader() {
-
-        }
-
         @Override
         public ObsidianPillar[] load(Long key) throws Exception {
             List<Integer> list = Lists.newArrayList(ContiguousSet.create(Range.closedOpen(0, 10), DiscreteDomain.integers()));

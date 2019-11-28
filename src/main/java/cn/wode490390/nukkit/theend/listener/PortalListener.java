@@ -27,10 +27,6 @@ public class PortalListener implements Listener {
 
     protected final Set<Player> showing = Sets.newHashSet();
 
-    public PortalListener(){
-
-    }
-
     @EventHandler
     public void onDataPacketReceive(DataPacketReceiveEvent event) {
         Player player = event.getPlayer();
@@ -39,13 +35,22 @@ public class PortalListener implements Listener {
             ShowCreditsPacket showCreditsPacket = (ShowCreditsPacket) packet;
             if (showCreditsPacket.status == ShowCreditsPacket.STATUS_END_CREDITS) {
                 this.showing.remove(player);
-                //player.setDimension(Level.DIMENSION_OVERWORLD, true);
-
                 Position respawnPos = player.getSpawn();
+
+                /*ChangeDimensionPacket changeDimensionPacket = new ChangeDimensionPacket();
+                changeDimensionPacket.dimension = Level.DIMENSION_OVERWORLD;
+                changeDimensionPacket.x = (float) respawnPos.x;
+                changeDimensionPacket.y = 32767f; //???
+                changeDimensionPacket.z = (float) respawnPos.z;
+                changeDimensionPacket.respawn = true;
+                player.dataPacket(changeDimensionPacket);*/
+
                 RespawnPacket respawnPacket = new RespawnPacket();
                 respawnPacket.x = (float) respawnPos.x;
                 respawnPacket.y = (float) respawnPos.y;
                 respawnPacket.z = (float) respawnPos.z;
+                //respawnPacket.respawnState = RespawnPacket.STATE_SEARCHING_FOR_SPAWN;
+                //respawnPacket.runtimeEntityId = player.getId(); //always 0, useless
                 player.dataPacket(respawnPacket);
 
                 player.removeAllEffects();
