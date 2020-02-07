@@ -4,7 +4,6 @@ import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.block.BlockPlaceEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerInteractEvent.Action;
 import cn.nukkit.item.Item;
@@ -12,16 +11,6 @@ import cn.nukkit.math.BlockFace;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
 
 public class TheEndListener implements Listener {
-
-    private static final int[] frame_faces = {2, 3, 0, 1}; //TODO: https://github.com/NukkitX/Nukkit/pull/811
-
-    @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
-        Block block = event.getBlock();
-        if (block.getId() == Block.END_PORTAL_FRAME) {
-            block.setDamage(frame_faces[event.getPlayer().getDirection().getHorizontalIndex()]);
-        }
-    }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {

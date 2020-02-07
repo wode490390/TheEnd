@@ -20,12 +20,13 @@ import cn.nukkit.network.protocol.RespawnPacket;
 import cn.nukkit.network.protocol.ShowCreditsPacket;
 import cn.nukkit.scheduler.Task;
 import cn.wode490390.nukkit.theend.generator.TheEndGenerator;
-import com.google.common.collect.Sets;
-import java.util.Set;
+import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 public class PortalListener implements Listener {
 
-    protected final Set<Player> showing = Sets.newHashSet();
+    private final LongSet showing = new LongOpenHashSet();
 
     @EventHandler
     public void onDataPacketReceive(DataPacketReceiveEvent event) {
@@ -33,8 +34,7 @@ public class PortalListener implements Listener {
         DataPacket packet = event.getPacket();
         if (packet instanceof ShowCreditsPacket) {
             ShowCreditsPacket showCreditsPacket = (ShowCreditsPacket) packet;
-            if (showCreditsPacket.status == ShowCreditsPacket.STATUS_END_CREDITS) {
-                this.showing.remove(player);
+            if (showCreditsPacket.status == ShowCreditsPacket.STATUS_END_CREDITS && this.showing.remove(player.getId())) {
                 Position respawnPos = player.getSpawn();
 
                 /*ChangeDimensionPacket changeDimensionPacket = new ChangeDimensionPacket();
@@ -92,10 +92,10 @@ public class PortalListener implements Listener {
                             }
                         }, 20);
                     } else {
-                        if (!this.showing.contains(player)) {
-                            this.showing.add(player);
+                        long id = player.getId();
+                        if (this.showing.add(id)) {
                             ShowCreditsPacket pk = new ShowCreditsPacket();
-                            pk.eid = player.getId();
+                            pk.eid = id;
                             pk.status = ShowCreditsPacket.STATUS_START_CREDITS;
                             player.dataPacket(pk);
                         }
@@ -140,23 +140,37 @@ public class PortalListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onEntityPortalEnter(EntityPortalEnterEvent event) {
+        if (event.getPortalType() == EntityPortalEnterEvent.PortalType.NETHER) {
+            Entity entity = event.getEntity();
+            if (entity.level == entity.getServer().getLevelByName("the_end")) {
+                event.setCancelled();
+            }
+        }
+    }
+
     private static Position moveToTheEnd(Position current) {
+        Preconditions.checkNotNull(current);
+
         if (!Server.getInstance().loadLevel("the_end")) {
-            Server.getInstance().getLogger().info("No level called \"the_end\" found, creating default the end level.");
+            Server.getInstance().getLogger().info("No level called 'the_end' found, creating default the end level.");
             Class<? extends Generator> generator = Generator.getGenerator("the_end");
             Server.getInstance().generateLevel("the_end", System.currentTimeMillis(), generator);
             if (!Server.getInstance().isLevelLoaded("the_end")) {
                 Server.getInstance().loadLevel("the_end");
             }
         }
+
         Level the_end = Server.getInstance().getLevelByName("the_end");
         if (the_end != null) {
-            if (current.level == Server.getInstance().getDefaultLevel()) {
-                return new Position(100.5, 49, 0.5, the_end);
-            } else if (current.level == the_end) {
+            if (current.level == the_end) {
                 return Server.getInstance().getDefaultLevel().getSpawnLocation();
+            } else {
+                return new Position(100.5, 49, 0.5, the_end);
             }
         }
+
         return null;
     }
 }

@@ -8,15 +8,16 @@ import cn.nukkit.level.format.generic.BaseFullChunk;
 import cn.nukkit.level.generator.populator.type.Populator;
 import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.math.Vector3;
-import cn.nukkit.scheduler.ServerScheduler;
-import cn.wode490390.nukkit.theend.task.GenerationTask;
+import cn.wode490390.nukkit.theend.TheEnd;
+import cn.wode490390.nukkit.theend.task.CallbackableGenerationTask;
+import com.google.common.collect.Sets;
+import java.util.Set;
 
 public class PopulatorPodium extends Populator {
 
     private Level level;
-    private boolean zero_negativeOne = false;
-    private boolean negativeOne_negativeOne = false;
-    private boolean negativeOne_zero = false;
+
+    private final Set<Long> waitingChunks = Sets.newConcurrentHashSet();
     private boolean generated = false;
 
     private boolean actived;
@@ -35,49 +36,40 @@ public class PopulatorPodium extends Populator {
         if (chunkX >> 4 != 0 || chunkZ >> 4 != 0) {
             return;
         }
-        int y = this.getHighestWorkableBlock(level, 0, 0, chunk);
-        if (level.getBlockIdAt(0, y, 0) != END_STONE) {
+        this.y = this.getHighestWorkableBlock(level, 0, 0, chunk);
+        if (level.getBlockIdAt(0, this.y, 0) != END_STONE) {
             return;
         }
-        level.setBlockAt(0, y, 0, BEDROCK);
+        level.setBlockAt(0, this.y, 0, BEDROCK);
         this.level = chunk.getProvider().getLevel();
-        this.y = y;
 
-        ServerScheduler scheduler = Server.getInstance().getScheduler();
-        BaseFullChunk zero_negativeOne = this.level.getChunk(0, -1, true);
-        if (!zero_negativeOne.isGenerated()) {
-            scheduler.scheduleAsyncTask(null, new GenerationTask(this.level, zero_negativeOne, this));
-        } else {
-            this.zero_negativeOne = true;
+        Set<BaseFullChunk> chunks = Sets.newHashSet();
+        for (int x = -1; x < 1; x++) {
+            for (int z = -1; z < 1; z++) {
+                BaseFullChunk ck = this.level.getChunk(x, z, true);
+                if (!ck.isGenerated()) {
+                    chunks.add(ck);
+                    this.waitingChunks.add(Level.chunkHash(x, z));
+                }
+            }
         }
-        BaseFullChunk negativeOne_negativeOne = this.level.getChunk(-1, -1, true);
-        if (!negativeOne_negativeOne.isGenerated()) {
-            scheduler.scheduleAsyncTask(null, new GenerationTask(this.level, negativeOne_negativeOne, this));
-        } else {
-            this.negativeOne_negativeOne = true;
+        if (!chunks.isEmpty()) {
+            chunks.forEach(ck -> Server.getInstance().getScheduler().scheduleAsyncTask(TheEnd.getInstance(), new CallbackableGenerationTask(this.level, ck, this)));
+            return;
         }
-        BaseFullChunk negativeOne_zero = this.level.getChunk(-1, 0, true);
-        if (!negativeOne_zero.isGenerated()) {
-            scheduler.scheduleAsyncTask(null, new GenerationTask(this.level, negativeOne_zero, this));
-        } else {
-            this.negativeOne_zero = true;
-        }
+
         this.generate();
     }
 
     public void generateChunkCallback(int chunkX, int chunkZ) {
-        if (chunkX == 0 && chunkZ == -1) {
-            this.zero_negativeOne = true;
-        } else if (chunkX == -1 && chunkZ == -1) {
-            this.negativeOne_negativeOne = true;
-        } else if (chunkX == -1 && chunkZ == 0) {
-            this.negativeOne_zero = true;
+        this.waitingChunks.remove(Level.chunkHash(chunkX, chunkZ));
+        if (this.waitingChunks.isEmpty()) {
+            this.generate();
         }
-        this.generate();
     }
 
     private synchronized void generate() {
-        if (this.zero_negativeOne && this.negativeOne_negativeOne && this.negativeOne_zero && !this.generated) {
+        if (!this.generated) {
             this.generated = true;
             for (int i = -1; i <= 32; i++) {
                 for (int x = -4; x <= 4; x++) {

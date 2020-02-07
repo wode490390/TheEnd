@@ -1,13 +1,15 @@
 package cn.wode490390.nukkit.theend.populator.theend;
 
+import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.item.EntityEndCrystal;
 import cn.nukkit.level.ChunkManager;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.math.Vector3;
+import cn.wode490390.nukkit.theend.TheEnd;
 import cn.wode490390.nukkit.theend.object.theend.ObsidianPillar;
 import cn.wode490390.nukkit.theend.populator.PopulatorBlock;
+import cn.wode490390.nukkit.theend.task.EndCrystalSpawnTask;
 
 public class PopulatorObsidianPillar extends PopulatorBlock {
 
@@ -54,7 +56,6 @@ public class PopulatorObsidianPillar extends PopulatorBlock {
         level.setBlockAt(x, height, z, BEDROCK);
         level.setBlockAt(x, height + 1, z, FIRE);
 
-        EntityEndCrystal enderCrystal = (EntityEndCrystal) Entity.createEntity(String.valueOf(EntityEndCrystal.NETWORK_ID), chunk, Entity.getDefaultNBT(new Vector3(x + 0.5,  height + 1, z + 0.5)));
-        enderCrystal.setShowBase(true);
+        Server.getInstance().getScheduler().scheduleTask(new EndCrystalSpawnTask(TheEnd.getInstance(), chunk, Entity.getDefaultNBT(new Vector3(x + 0.5,  height + 1, z + 0.5))));
     }
 }

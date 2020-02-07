@@ -7,7 +7,7 @@
     <groupId>cn.wode490390.nukkit</groupId>
     <artifactId>theend</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>TheEnd</name>
     <description>The end plugin for Nukkit</description>
     <url>http://wode490390.cn/</url>

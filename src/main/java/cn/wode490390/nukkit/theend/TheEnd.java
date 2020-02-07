@@ -9,7 +9,12 @@ import cn.wode490390.nukkit.theend.listener.TheEndListener;
 
 public class TheEnd extends PluginBase {
 
-    public static boolean activated;
+    private static TheEnd INSTANCE;
+
+    @Override
+    public void onLoad() {
+        INSTANCE = this;
+    }
 
     @Override
     public void onEnable() {
@@ -38,5 +43,9 @@ public class TheEnd extends PluginBase {
 
     private void logConfigException(String node, Throwable t) {
         this.getLogger().alert("An error occurred while reading the configuration '" + node + "'. Use the default value.", t);
+    }
+
+    public static TheEnd getInstance() {
+        return INSTANCE;
     }
 }

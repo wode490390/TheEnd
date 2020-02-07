@@ -8,7 +8,7 @@ import cn.nukkit.level.generator.SimpleChunkManager;
 import cn.nukkit.scheduler.AsyncTask;
 import cn.wode490390.nukkit.theend.populator.theend.PopulatorPodium;
 
-public class GenerationTask extends AsyncTask {
+public class CallbackableGenerationTask extends AsyncTask {
 
     public boolean state = true;
 
@@ -17,7 +17,7 @@ public class GenerationTask extends AsyncTask {
 
     private PopulatorPodium podium;
 
-    public GenerationTask(Level level, BaseFullChunk chunk, PopulatorPodium podium) {
+    public CallbackableGenerationTask(Level level, BaseFullChunk chunk, PopulatorPodium podium) {
         this.chunk = chunk;
         this.level = level;
         this.podium = podium;
@@ -52,10 +52,10 @@ public class GenerationTask extends AsyncTask {
                 }
             }
         }
-    }
+    //}
 
-    @Override
-    public void onCompletion(Server server) {
+    //@Override
+    //public void onCompletion(Server server) {
         if (this.state && this.level != null) {
             if (this.chunk != null) {
                 this.podium.generateChunkCallback(this.chunk.getX(), this.chunk.getZ());
