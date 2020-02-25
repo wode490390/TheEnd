@@ -34,6 +34,7 @@ public class TheEndGenerator extends Generator {
     protected static double detailNoiseScaleY; // mainNoiseScaleY
     protected static double detailNoiseScaleZ; // mainNoiseScaleZ
     protected static boolean activated;
+    protected static boolean spawnDragon;
 
     public static void setConfig(Config config) {
         coordinateScale = getConfig(config, "generator.end.coordinate-scale", 684.412d);
@@ -41,7 +42,9 @@ public class TheEndGenerator extends Generator {
         detailNoiseScaleX = getConfig(config, "generator.end.detail.noise-scale.x", 80d);
         detailNoiseScaleY = getConfig(config, "generator.end.detail.noise-scale.y", 160d);
         detailNoiseScaleZ = getConfig(config, "generator.end.detail.noise-scale.z", 80d);
+
         activated = getConfig(config, "exit-portal-activated", true);
+        spawnDragon = getConfig(config, "spawn-ender-dragon", true);
     }
 
     protected final double[][][] density = new double[3][3][33];
@@ -123,7 +126,7 @@ public class TheEndGenerator extends Generator {
             this.populators.add(populator);
         }
 
-        this.populators.add(new PopulatorPodium(activated));
+        this.populators.add(new PopulatorPodium(activated, spawnDragon));
         this.populators.add(new PopulatorEndIsland(this));
         this.populators.add(new PopulatorChorusPlant(this));
         this.populators.add(new PopulatorEndGateway(this));

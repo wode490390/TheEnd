@@ -6,6 +6,7 @@ import cn.nukkit.utils.Config;
 import cn.wode490390.nukkit.theend.generator.TheEndGenerator;
 import cn.wode490390.nukkit.theend.listener.PortalListener;
 import cn.wode490390.nukkit.theend.listener.TheEndListener;
+import cn.wode490390.nukkit.theend.util.MetricsLite;
 
 public class TheEnd extends PluginBase {
 
@@ -19,10 +20,11 @@ public class TheEnd extends PluginBase {
     @Override
     public void onEnable() {
         try {
-            new MetricsLite(this);
+            new MetricsLite(this, 4882);
         } catch (Throwable ignore) {
 
         }
+
         this.saveDefaultConfig();
         Config config = this.getConfig();
         String node = "enable-end-portal";
@@ -32,9 +34,10 @@ public class TheEnd extends PluginBase {
         } catch (Exception e) {
             this.logConfigException(node, e);
         }
-        TheEndGenerator.setConfig(config);
 
+        TheEndGenerator.setConfig(config);
         Generator.addGenerator(TheEndGenerator.class, "the_end", TheEndGenerator.TYPE_THE_END);
+
         this.getServer().getPluginManager().registerEvents(new TheEndListener(), this);
         if (portal) {
             this.getServer().getPluginManager().registerEvents(new PortalListener(), this);

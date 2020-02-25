@@ -1,5 +1,6 @@
 enable-end-portal: true
 exit-portal-activated: true
+spawn-ender-dragon: true
 generator:
   end:
     coordinate-scale: 684.412

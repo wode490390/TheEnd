@@ -223,7 +223,3 @@ __MACOSX/*
 
 # Java
 *.MF
-
-# Jrebel
-rebel.xml
-rebel-remote.xml

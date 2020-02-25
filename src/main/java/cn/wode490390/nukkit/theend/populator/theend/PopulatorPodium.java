@@ -1,6 +1,7 @@
 package cn.wode490390.nukkit.theend.populator.theend;
 
 import cn.nukkit.Server;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.level.ChunkManager;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.format.FullChunk;
@@ -10,25 +11,34 @@ import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.math.Vector3;
 import cn.wode490390.nukkit.theend.TheEnd;
 import cn.wode490390.nukkit.theend.task.CallbackableGenerationTask;
+import cn.wode490390.nukkit.theend.task.EnderDragonSpawnTask;
 import com.google.common.collect.Sets;
 import java.util.Set;
 
 public class PopulatorPodium extends Populator {
 
     private Level level;
+    private FullChunk baseChunk;
 
     private final Set<Long> waitingChunks = Sets.newConcurrentHashSet();
     private boolean generated = false;
 
     private boolean actived;
+    private boolean spawnDragon;
+
     private int y;
 
     public PopulatorPodium() {
-        this(false);
+        this(false, false);
     }
 
     public PopulatorPodium(boolean actived) {
+        this(actived, false);
+    }
+
+    public PopulatorPodium(boolean actived, boolean spawnDragon) {
         this.actived = actived;
+        this.spawnDragon = spawnDragon;
     }
 
     @Override
@@ -42,6 +52,7 @@ public class PopulatorPodium extends Populator {
         }
         level.setBlockAt(0, this.y, 0, BEDROCK);
         this.level = chunk.getProvider().getLevel();
+        this.baseChunk = chunk;
 
         Set<BaseFullChunk> chunks = Sets.newHashSet();
         for (int x = -1; x < 1; x++) {
@@ -71,6 +82,7 @@ public class PopulatorPodium extends Populator {
     private synchronized void generate() {
         if (!this.generated) {
             this.generated = true;
+
             for (int i = -1; i <= 32; i++) {
                 for (int x = -4; x <= 4; x++) {
                     for (int z = -4; z <= 4; z++) {
@@ -96,6 +108,7 @@ public class PopulatorPodium extends Populator {
                     }
                 }
             }
+
             for (int i = 0; i < 4; ++i) {
                 this.level.setBlockAt(0, this.y + i, 0, BEDROCK);
             }
@@ -104,6 +117,10 @@ public class PopulatorPodium extends Populator {
             this.level.setBlockAt(-1, torch, 0, TORCH, 2);
             this.level.setBlockAt(0, torch, 1, TORCH, 3);
             this.level.setBlockAt(0, torch, -1, TORCH, 4);
+
+            if (this.spawnDragon && this.baseChunk != null) {
+                Server.getInstance().getScheduler().scheduleTask(new EnderDragonSpawnTask(TheEnd.getInstance(), this.baseChunk, Entity.getDefaultNBT(new Vector3(0.5,  this.y + 5, 0.5))));
+            }
         }
     }
 }
