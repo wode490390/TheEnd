@@ -14,11 +14,11 @@ import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.Position;
 import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.level.generator.Generator;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.RespawnPacket;
 import cn.nukkit.network.protocol.ShowCreditsPacket;
 import cn.nukkit.scheduler.Task;
+import cn.wode490390.nukkit.theend.TheEnd;
 import cn.wode490390.nukkit.theend.generator.TheEndGenerator;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -49,7 +49,7 @@ public class PortalListener implements Listener {
                 respawnPacket.x = (float) respawnPos.x;
                 respawnPacket.y = (float) respawnPos.y;
                 respawnPacket.z = (float) respawnPos.z;
-                //respawnPacket.respawnState = RespawnPacket.STATE_SEARCHING_FOR_SPAWN;
+                respawnPacket.respawnState = RespawnPacket.STATE_SEARCHING_FOR_SPAWN;
                 //respawnPacket.runtimeEntityId = player.getId(); //always 0, useless
                 player.dataPacket(respawnPacket);
 
@@ -65,6 +65,9 @@ public class PortalListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
+        if ((player.getServer().getTick() & 0b1111) != 0) {
+            return;
+        }
         if (player.getLevel().getBlock(player.getFloorX(), player.getFloorY(), player.getFloorZ()) instanceof BlockEndPortal && player.y - player.getFloorY() < 0.75) {
             EntityPortalEnterEvent ev = new EntityPortalEnterEvent(player, EntityPortalEnterEvent.PortalType.END);
             Server.getInstance().getPluginManager().callEvent(ev);
@@ -108,6 +111,9 @@ public class PortalListener implements Listener {
     //@EventHandler //TODO: bug
     public void onEntityMotion(EntityMotionEvent event) {
         Entity entity = event.getEntity();
+        if ((entity.getServer().getTick() & 0b1111) != 0) {
+            return;
+        }
         if (entity.getLevel().getBlock(entity.getFloorX(), entity.getFloorY(), entity.getFloorZ()) instanceof BlockEndPortal && entity.y - entity.getFloorY() < 0.75) {
             EntityPortalEnterEvent ev = new EntityPortalEnterEvent(entity, EntityPortalEnterEvent.PortalType.END);
             Server.getInstance().getPluginManager().callEvent(ev);
@@ -144,7 +150,7 @@ public class PortalListener implements Listener {
     public void onEntityPortalEnter(EntityPortalEnterEvent event) {
         if (event.getPortalType() == EntityPortalEnterEvent.PortalType.NETHER) {
             Entity entity = event.getEntity();
-            if (entity.level == entity.getServer().getLevelByName("the_end")) {
+            if (entity.level == entity.getServer().getLevelByName(TheEnd.THE_END_LEVEL_NAME)) {
                 event.setCancelled();
             }
         }
@@ -152,22 +158,16 @@ public class PortalListener implements Listener {
 
     private static Position moveToTheEnd(Position current) {
         Preconditions.checkNotNull(current);
+        Server server = Server.getInstance();
 
-        if (!Server.getInstance().loadLevel("the_end")) {
-            Server.getInstance().getLogger().info("No level called 'the_end' found, creating default the end level.");
-            Class<? extends Generator> generator = Generator.getGenerator("the_end");
-            Server.getInstance().generateLevel("the_end", System.currentTimeMillis(), generator);
-            if (!Server.getInstance().isLevelLoaded("the_end")) {
-                Server.getInstance().loadLevel("the_end");
-            }
-        }
+        TheEnd.loadTheEndLevel();
 
-        Level the_end = Server.getInstance().getLevelByName("the_end");
-        if (the_end != null) {
-            if (current.level == the_end) {
-                return Server.getInstance().getDefaultLevel().getSpawnLocation();
+        Level theEnd = server.getLevelByName(TheEnd.THE_END_LEVEL_NAME);
+        if (theEnd != null) {
+            if (current.level == theEnd) {
+                return server.getDefaultLevel().getSpawnLocation();
             } else {
-                return new Position(100.5, 49, 0.5, the_end);
+                return new Position(100.5, 49, 0.5, theEnd);
             }
         }
 

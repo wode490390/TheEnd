@@ -18,7 +18,7 @@ public abstract class PopulatorBlock extends Populator {
     @Override
     public void populate(ChunkManager level, int chunkX, int chunkZ, NukkitRandom random, FullChunk chunk) {
         for (int i = 0; i < amount; i++) {
-            decorate(level, chunkX, chunkZ, random, chunk);
+            this.decorate(level, chunkX, chunkZ, random, chunk);
         }
     }
 }

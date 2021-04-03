@@ -1,26 +1,24 @@
-package cn.wode490390.nukkit.theend.task;
+package cn.wode490390.nukkit.theend.scheduler;
 
-import cn.nukkit.Server;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.format.generic.BaseFullChunk;
 import cn.nukkit.level.generator.Generator;
 import cn.nukkit.level.generator.SimpleChunkManager;
 import cn.nukkit.scheduler.AsyncTask;
-import cn.wode490390.nukkit.theend.populator.theend.PopulatorPodium;
 
-public class CallbackableGenerationTask extends AsyncTask {
+public class ChunkGenerationTask extends AsyncTask {
 
     public boolean state = true;
 
     private final Level level;
     private BaseFullChunk chunk;
 
-    private PopulatorPodium podium;
+    private final ChunkListener callback;
 
-    public CallbackableGenerationTask(Level level, BaseFullChunk chunk, PopulatorPodium podium) {
+    public ChunkGenerationTask(Level level, BaseFullChunk chunk, ChunkListener callback) {
         this.chunk = chunk;
         this.level = level;
-        this.podium = podium;
+        this.callback = callback;
     }
 
     @Override
@@ -52,14 +50,14 @@ public class CallbackableGenerationTask extends AsyncTask {
                 }
             }
         }
-    //}
 
-    //@Override
-    //public void onCompletion(Server server) {
-        if (this.state && this.level != null) {
-            if (this.chunk != null) {
-                this.podium.generateChunkCallback(this.chunk.getX(), this.chunk.getZ());
-            }
+        if (this.state && this.chunk != null && this.callback != null) {
+            this.callback.onChunkGenerated(this.chunk.getX(), this.chunk.getZ());
         }
+    }
+
+    public interface ChunkListener {
+
+        void onChunkGenerated(int chunkX, int chunkZ);
     }
 }

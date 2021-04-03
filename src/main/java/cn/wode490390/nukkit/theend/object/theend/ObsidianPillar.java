@@ -3,6 +3,7 @@ package cn.wode490390.nukkit.theend.object.theend;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -47,24 +48,26 @@ public class ObsidianPillar {
     }
 
     private static final LoadingCache<Long, ObsidianPillar[]> CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(5l, TimeUnit.MINUTES)
-            .<Long, ObsidianPillar[]>build(new ObsidianPillarCacheLoader());
+            .expireAfterWrite(5L, TimeUnit.MINUTES)
+            .build(new ObsidianPillarCacheLoader());
 
     public static ObsidianPillar[] getObsidianPillars(long seed) {
-        return CACHE.getUnchecked(new Random(seed).nextLong() & 0xffffl);
+        return CACHE.getUnchecked(new Random(seed).nextLong() & 0xffffL);
     }
 
     private static class ObsidianPillarCacheLoader extends CacheLoader<Long, ObsidianPillar[]> {
 
         @Override
-        public ObsidianPillar[] load(Long key) throws Exception {
-            List<Integer> list = IntStream.range(0, 10).boxed().collect(Collectors.toList());
-            Collections.shuffle(list, new Random(key));
+        public ObsidianPillar[] load(Long key) {
+            List<Integer> pillars = IntStream.range(0, 10).boxed().collect(Collectors.toList());
+            Collections.shuffle(pillars, new Random(key));
             ObsidianPillar[] obsidianPillars = new ObsidianPillar[10];
 
             for (int i = 0; i < 10; ++i) {
-                int pillar = list.get(i);
-                obsidianPillars[i] = new ObsidianPillar((int) (42d * Math.cos(2d * (-Math.PI + (Math.PI / 10d) * i))), (int) (42d * Math.sin(2d * (-Math.PI + (Math.PI / 10d) * i))), 2 + pillar / 3, 76 + pillar * 3, pillar == 1 || pillar == 2);
+                int pillar = pillars.get(i);
+                obsidianPillars[i] = new ObsidianPillar((int) (42d * Math.cos(2d * (-Math.PI + (Math.PI / 10d) * i))),
+                        (int) (42d * Math.sin(2d * (-Math.PI + (Math.PI / 10d) * i))),
+                        2 + pillar / 3, 76 + pillar * 3, pillar == 1 || pillar == 2);
             }
 
             return obsidianPillars;

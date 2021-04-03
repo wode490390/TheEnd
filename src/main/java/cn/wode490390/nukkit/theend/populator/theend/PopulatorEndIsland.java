@@ -10,9 +10,6 @@ public class PopulatorEndIsland extends Populator {
 
     private final TheEndGenerator end;
 
-    private ChunkManager level;
-    private NukkitRandom random;
-
     public PopulatorEndIsland(TheEndGenerator end) {
         this.end = end;
     }
@@ -22,35 +19,33 @@ public class PopulatorEndIsland extends Populator {
         if (Math.pow(chunkX, 2) + Math.pow(chunkZ, 2) <= 4096) {
             return;
         }
-        this.random = random;
 
-        if (this.end.getIslandHeight(chunkX, chunkZ) < -20 && this.random.nextBoundedInt(14) == 0) {
-            this.level = level;
+        if (this.end.getIslandHeight(chunkX, chunkZ) < -20 && random.nextBoundedInt(14) == 0) {
             int x = chunkX << 4;
             int z = chunkZ << 4;
-            this.generate(x, z);
+            this.generate(level, x, z, random);
 
-            if (this.random.nextBoundedInt(4) == 0) {
-                this.generate(x, z);
+            if (random.nextBoundedInt(4) == 0) {
+                this.generate(level, x, z, random);
             }
         }
     }
 
-    private void generate(int x, int z) {
-        x += this.random.nextBoundedInt(16) + 8;
-        z += this.random.nextBoundedInt(16) + 8;
-        int y = 55 + this.random.nextBoundedInt(16);
+    private void generate(ChunkManager level, int x, int z, NukkitRandom random) {
+        x += random.nextBoundedInt(16) + 8;
+        z += random.nextBoundedInt(16) + 8;
+        int y = 55 + random.nextBoundedInt(16);
 
-        float f = this.random.nextBoundedInt(3) + 4;
+        float f = random.nextBoundedInt(3) + 4;
         for (int i = 0; f > 0.5; --i) {
             for (int j = (int) Math.floor(-f); j <= Math.ceil(f); ++j) {
                 for (int k = (int) Math.floor(-f); k <= Math.ceil(f); ++k) {
                     if (Math.pow(j, 2) + Math.pow(k, 2) <= Math.pow(f + 1, 2)) {
-                        this.level.setBlockAt(x + j, y + i, z + k, END_STONE);
+                        level.setBlockAt(x + j, y + i, z + k, END_STONE);
                     }
                 }
             }
-            f -= this.random.nextBoundedInt(2) + 0.5;
+            f -= random.nextBoundedInt(2) + 0.5;
         }
     }
 }

@@ -6,10 +6,9 @@ import cn.nukkit.level.ChunkManager;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.math.Vector3;
-import cn.wode490390.nukkit.theend.TheEnd;
 import cn.wode490390.nukkit.theend.object.theend.ObsidianPillar;
 import cn.wode490390.nukkit.theend.populator.PopulatorBlock;
-import cn.wode490390.nukkit.theend.task.EndCrystalSpawnTask;
+import cn.wode490390.nukkit.theend.scheduler.EndCrystalSpawnTask;
 
 public class PopulatorObsidianPillar extends PopulatorBlock {
 
@@ -27,6 +26,14 @@ public class PopulatorObsidianPillar extends PopulatorBlock {
             return;
         }
 
+        this.place(level);
+
+        Server.getInstance().getScheduler().scheduleTask(new EndCrystalSpawnTask(chunk, Entity.getDefaultNBT(new Vector3(x + 0.5,  this.obsidianPillar.getHeight() + 1, z + 0.5))));
+    }
+
+    public void place(ChunkManager level) {
+        int x = this.obsidianPillar.getCenterX();
+        int z = this.obsidianPillar.getCenterZ();
         int height = this.obsidianPillar.getHeight();
         int radius = this.obsidianPillar.getRadius();
 
@@ -55,7 +62,5 @@ public class PopulatorObsidianPillar extends PopulatorBlock {
 
         level.setBlockAt(x, height, z, BEDROCK);
         level.setBlockAt(x, height + 1, z, FIRE);
-
-        Server.getInstance().getScheduler().scheduleTask(new EndCrystalSpawnTask(TheEnd.getInstance(), chunk, Entity.getDefaultNBT(new Vector3(x + 0.5,  height + 1, z + 0.5))));
     }
 }

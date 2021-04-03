@@ -21,32 +21,32 @@ public class PopulatorEndGateway extends Populator {
         }
 
         if (this.end.getIslandHeight(chunkX, chunkZ) > 40 && random.nextBoundedInt(700) == 0) {
-            int x = (chunkX << 4) + random.nextBoundedInt(16) + 8;
-            int z = (chunkZ << 4) + random.nextBoundedInt(16) + 8;
-            int y = this.getHighestWorkableBlock(level, x, z, chunk) + 3 + random.nextBoundedInt(7);
+            int baseX = (chunkX << 4) + random.nextBoundedInt(16) + 8;
+            int baseZ = (chunkZ << 4) + random.nextBoundedInt(16) + 8;
+            int baseY = this.getHighestWorkableBlock(level, baseX, baseZ, chunk) + 3 + random.nextBoundedInt(7);
 
-            if (y > 1 && y < 254) {
-                for (int i = -2; i <= 2; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        for (int k = -1; k <= 1; k++) {
-                            int tempX = x + j;
-                            int tempY = y + i;
-                            int tempZ = z + k;
-                            boolean xFlag = tempX == x;
-                            boolean yFlag = tempY == y;
-                            boolean zFlag = tempZ == z;
-                            boolean flag = Math.abs(i) == 2;
+            if (baseY > 1 && baseY < 254) {
+                for (int yOffset = -2; yOffset <= 2; yOffset++) {
+                    for (int xOffset = -1; xOffset <= 1; xOffset++) {
+                        for (int zOffset = -1; zOffset <= 1; zOffset++) {
+                            int x = baseX + xOffset;
+                            int y = baseY + yOffset;
+                            int z = baseZ + zOffset;
+                            boolean xCenter = x == baseX;
+                            boolean yCenter = y == baseY;
+                            boolean zCenter = z == baseZ;
+                            boolean center = Math.abs(yOffset) == 2;
 
-                            if (xFlag && yFlag && zFlag) {
-                                level.setBlockAt(tempX, tempY, tempZ, END_GATEWAY);
-                            } else if (yFlag) {
-                                level.setBlockAt(tempX, tempY, tempZ, AIR);
-                            } else if (flag && xFlag && zFlag) {
-                                level.setBlockAt(tempX, tempY, tempZ, BEDROCK);
-                            } else if ((xFlag || zFlag) && !flag) {
-                                level.setBlockAt(tempX, tempY, tempZ, BEDROCK);
+                            if (xCenter && yCenter && zCenter) {
+                                level.setBlockAt(x, y, z, END_GATEWAY);
+                            } else if (yCenter) {
+                                level.setBlockAt(x, y, z, AIR);
+                            } else if (center && xCenter && zCenter) {
+                                level.setBlockAt(x, y, z, BEDROCK);
+                            } else if ((xCenter || zCenter) && !center) {
+                                level.setBlockAt(x, y, z, BEDROCK);
                             } else {
-                                level.setBlockAt(tempX, tempY, tempZ, AIR);
+                                level.setBlockAt(x, y, z, AIR);
                             }
                         }
                     }

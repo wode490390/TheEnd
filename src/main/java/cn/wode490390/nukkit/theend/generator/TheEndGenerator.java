@@ -18,21 +18,25 @@ import cn.wode490390.nukkit.theend.populator.theend.PopulatorEndGateway;
 import cn.wode490390.nukkit.theend.populator.theend.PopulatorEndIsland;
 import cn.wode490390.nukkit.theend.populator.theend.PopulatorObsidianPillar;
 import cn.wode490390.nukkit.theend.populator.theend.PopulatorPodium;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class TheEndGenerator extends Generator {
 
     public static final int TYPE_THE_END = 4;
+    public static final String THE_END_GENERATOR_NAME = "the_end";
 
     protected static double coordinateScale;
     protected static double heightScale;
     protected static double detailNoiseScaleX; // mainNoiseScaleX
     protected static double detailNoiseScaleY; // mainNoiseScaleY
     protected static double detailNoiseScaleZ; // mainNoiseScaleZ
+
     protected static boolean activated;
     protected static boolean spawnDragon;
 
@@ -51,8 +55,7 @@ public class TheEndGenerator extends Generator {
 
     protected ChunkManager level;
     protected NukkitRandom nukkitRandom;
-    protected final List<Populator> populators = Lists.newArrayList();
-    protected List<Populator> generationPopulators = Lists.newArrayList();
+    protected final List<Populator> populators = new ArrayList<>();
 
     protected long localSeed1;
     protected long localSeed2;
@@ -67,7 +70,7 @@ public class TheEndGenerator extends Generator {
     }
 
     public TheEndGenerator(Map<String, Object> options) {
-
+        // reflection
     }
 
     @Override
@@ -82,12 +85,12 @@ public class TheEndGenerator extends Generator {
 
     @Override
     public String getName() {
-        return "the_end";
+        return THE_END_GENERATOR_NAME;
     }
 
     @Override
     public Map<String, Object> getSettings() {
-        return Maps.newHashMap();
+        return Collections.emptyMap();
     }
 
     @Override
@@ -100,8 +103,10 @@ public class TheEndGenerator extends Generator {
         this.level = level;
         this.nukkitRandom = random;
         this.nukkitRandom.setSeed(this.level.getSeed());
-        this.localSeed1 = ThreadLocalRandom.current().nextLong();
-        this.localSeed2 = ThreadLocalRandom.current().nextLong();
+
+        Random rand = ThreadLocalRandom.current();
+        this.localSeed1 = rand.nextLong();
+        this.localSeed2 = rand.nextLong();
 
         this.roughnessNoise = new PerlinOctaveGenerator(this.nukkitRandom, 16, 3, 33, 3);
         this.roughnessNoise.setXScale(coordinateScale);
@@ -120,7 +125,8 @@ public class TheEndGenerator extends Generator {
 
         this.islandNoise = new SimplexNoise(this.nukkitRandom);
 
-        for (ObsidianPillar obsidianPillar : ObsidianPillar.getObsidianPillars(this.level.getSeed())) {
+        ObsidianPillar[] obsidianPillars = ObsidianPillar.getObsidianPillars(this.level.getSeed());
+        for (ObsidianPillar obsidianPillar : obsidianPillars) {
             PopulatorObsidianPillar populator = new PopulatorObsidianPillar(obsidianPillar);
             populator.setAmount(1);
             this.populators.add(populator);
@@ -134,7 +140,7 @@ public class TheEndGenerator extends Generator {
 
     @Override
     public void generateChunk(int chunkX, int chunkZ) {
-        this.nukkitRandom.setSeed(chunkX * localSeed1 ^ chunkZ * localSeed2 ^ this.level.getSeed());
+        this.nukkitRandom.setSeed(chunkX * this.localSeed1 ^ chunkZ * this.localSeed2 ^ this.level.getSeed());
 
         BaseFullChunk chunk = this.level.getChunk(chunkX, chunkZ);
 
@@ -217,8 +223,6 @@ public class TheEndGenerator extends Generator {
                 chunk.setBiomeId(x, z, 9);//EnumBiome.THE_END.biome.getId()
             }
         }
-
-        this.generationPopulators.forEach(populator -> populator.populate(this.level, chunkX, chunkZ, this.nukkitRandom, chunk));
     }
 
     @Override

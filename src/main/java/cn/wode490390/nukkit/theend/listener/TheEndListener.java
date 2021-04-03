@@ -14,25 +14,32 @@ public class TheEndListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Block block;
-        Player player;
-        Item item;
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && (block = event.getBlock()).getId() == Block.END_PORTAL_FRAME && (block.getDamage() & 0x4) == 0 && (item = (player = event.getPlayer()).getInventory().getItemInHand()).getId() == Item.ENDER_EYE) {
-            event.setCancelled();
-            if (!player.isSneaking()) {
-                block.onActivate(item, player);
-            }
-            for (int i = 0; i < 4; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    Block t = block.getSide(BlockFace.fromHorizontalIndex(i), 2).getSide(BlockFace.fromHorizontalIndex((i + 1) % 4), j);
-                    if (isCompletedPortal(t)) {
-                        for (int k = -1; k <= 1; k++) {
-                            for (int l = -1; l <= 1; l++) {
-                                block.getLevel().setBlock(t.add(k, 0, l), Block.get(Block.END_PORTAL), true);
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            Block block = event.getBlock();
+            if (block.getId() == Block.END_PORTAL_FRAME && (block.getDamage() & 0x4) == 0) {
+                Player player = event.getPlayer();
+                Item item = player.getInventory().getItemInHand();
+                if (item.getId() == Item.ENDER_EYE) {
+                    event.setCancelled();
+
+                    if (!player.isSneaking()) {
+                        block.onActivate(item, player);
+                    }
+
+                    for (int i = 0; i < 4; i++) {
+                        for (int j = -1; j <= 1; j++) {
+                            Block test = block.getSide(BlockFace.fromHorizontalIndex(i), 2).getSide(BlockFace.fromHorizontalIndex((i + 1) % 4), j);
+                            if (isCompletedPortal(test)) {
+                                for (int x = -1; x <= 1; x++) {
+                                    for (int z = -1; z <= 1; z++) {
+                                        block.getLevel().setBlock(test.add(x, 0, z), Block.get(Block.END_PORTAL), true);
+                                    }
+                                }
+
+                                block.getLevel().addLevelSoundEvent(block, LevelSoundEventPacket.SOUND_BLOCK_END_PORTAL_SPAWN);
+                                return;
                             }
                         }
-                        block.getLevel().addLevelSoundEvent(block, LevelSoundEventPacket.SOUND_BLOCK_END_PORTAL_SPAWN);
-                        return;
                     }
                 }
             }
